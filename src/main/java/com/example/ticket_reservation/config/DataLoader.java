@@ -3,10 +3,12 @@ package com.example.ticket_reservation.config;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import com.example.ticket_reservation.model.AppUser;
 import com.example.ticket_reservation.model.Event;
+import com.example.ticket_reservation.model.Reservation;
 import com.example.ticket_reservation.model.Role;
 import com.example.ticket_reservation.repository.EventRepository;
 import com.example.ticket_reservation.repository.UserRepository;
@@ -16,14 +18,17 @@ public class DataLoader implements CommandLineRunner {
     private final UserRepository userRepository;
     private final EventRepository eventRepository;
     private final PasswordEncoder passwordEncoder;
+    private final MongoTemplate mongoTemplate;
 
     public DataLoader(
             UserRepository userRepository,
             EventRepository eventRepository,
-            PasswordEncoder passwordEncoder) {
+            PasswordEncoder passwordEncoder,
+            MongoTemplate mongoTemplate) {
         this.userRepository = userRepository;
         this.eventRepository = eventRepository;
         this.passwordEncoder = passwordEncoder;
+        this.mongoTemplate = mongoTemplate;
     }
 
     @Override
@@ -36,6 +41,9 @@ public class DataLoader implements CommandLineRunner {
                     LocalDateTime.now().plusDays(30), 200, new BigDecimal("2500.00"), "organizer");
             seedEvent("Technology Conference", "A day of technology talks", "Kandy",
                     LocalDateTime.now().plusDays(60), 100, new BigDecimal("1500.00"), "organizer");
+        }
+        if (!mongoTemplate.collectionExists("reservations")) {
+            mongoTemplate.createCollection(Reservation.class);
         }
     }
 
